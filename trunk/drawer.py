@@ -30,6 +30,8 @@ from month import month_thai_short
 DAY = 0
 MONTH = 1
 YEAR = 2
+MONTH_NUM = 12
+HEAD_ROW_NUM = 2
 
 class Drawer(object):
     def __init__(self, out, specs, max_x = 1024, max_y = 800):
@@ -40,6 +42,11 @@ class Drawer(object):
         self.x_fac = 100 
         self.y_fac = 30
         self.desc_len = 200
+        self.main_move_x = 30
+        self.main_move_y = 30
+        self.move_from_line_x = 2
+        self.move_text_up_y = 10
+        self.bar_space = 5
 
     def duration(self):
         return self.time_unit( \
@@ -47,7 +54,7 @@ class Drawer(object):
                            self.specs['end']['date']))
        
     def resolution(self):
-        r_list = [1,2,3,4,6]
+        r_list = [1,2,3,4,6] # MONTH_NUM % r = 0
         r_list.reverse()
         ri = self.specs['resolution']['month']
         r = 1
@@ -59,7 +66,7 @@ class Drawer(object):
 
     def time_unit(self, date_tuple):
         r = self.resolution()
-        u = date_tuple[YEAR] * 12 + date_tuple[MONTH]
+        u = date_tuple[YEAR] * MONTH_NUM + date_tuple[MONTH]
         u = (u + r - 1) / r
         return u
     
@@ -91,13 +98,12 @@ class Drawer(object):
         print >>self.out, "</g>"
 
     def __call__(self):
-        self.g_move(30, 30)
+        self.g_move(self.main_move_x, self.main_move_y)
         self.draw_header()
         self.draw_desc()
         self.draw_lines()
         self.draw_progress()
         self.g_close()
-
 
     def draw_progress(self):
         for i, activity in enumerate(self.activities()):
@@ -107,22 +113,15 @@ class Drawer(object):
             em = activity['end']['month']
             ey = activity['end']['year']
             ed = self.month_year_to_duration_ceiling(em, ey)
-            
             x1 = sd * self.x_fac + self.desc_len
             x2 = (ed) * self.x_fac + self.desc_len
-            y1 = self.y_fac * (2 + i) + 5 
-            y2 = self.y_fac * (2 + i + 1) - 5 
-
-
+            y1 = self.y_fac * (2 + i) + self.bar_space 
+            y2 = self.y_fac * (2 + i + 1) - self.bar_space
             self.draw_rect(x1, y1, x2, y2, "#E0E0E0")
-
             if 'complete' in activity:
                 c = activity['complete']
                 x2_ = x1 + int((x2 - x1) * float(c) / 100.0)
                 self.draw_rect(x1, y1+5, x2_, y2-5)
-
-
-
     
     def draw_rect(self, x1, y1, x2, y2, fill="black"):
         print >>self.out, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"%s\"/>" % (x1, y1, x2 - x1, y2 - y1, fill)
@@ -140,16 +139,16 @@ class Drawer(object):
         start_m = self.adjusted_start_month()
         start_y = self.start_year()
         m = i * self.resolution() + start_m
-        y = start_y + m / 12
-        m = m % 12
+        y = start_y + m / MONTH_NUM
+        m = m % MONTH_NUM
         return (m, y)
 
     def month_year_end(self, i):
         start_m = self.adjusted_start_month()
         start_y = self.specs['start']['date']['year']
         m = ((i + 1) * self.resolution()) + start_m - 1
-        y = start_y + m / 12
-        m = m % 12
+        y = start_y + m / MONTH_NUM 
+        m = m % MONTH_NUM
         return (m, y)
 
     def month_year_to_duration_ceiling(self, m, y):
@@ -157,7 +156,7 @@ class Drawer(object):
         start_y = self.start_year()
         dy = y - start_y
         dm = m - start_m
-        d = dm + dy * 12
+        d = dm + dy * MONTH_NUM
         return (d + self.resolution() - 1)/ self.resolution()
 
     def month_year_to_duration_floor(self, m, y):
@@ -165,9 +164,8 @@ class Drawer(object):
         start_y = self.start_year()
         dy = y - start_y
         dm = m - start_m
-        d = dm + dy * 12
+        d = dm + dy * MONTH_NUM
         return d / self.resolution()
-
 
     def month_str(self, d):
         if self.resolution() > 1:
@@ -192,31 +190,31 @@ class Drawer(object):
 
     def draw_years(self):
         duration = self.duration()
-        self.g_move(0, 20)
+        self.g_move(0, self.y_fac - self.move_text_up_y)
         y_ = None
         for d in range(duration):
-            y = self.month_year_start(d)[1]
+            y = self.month_year_start(d)[1] # 1 = month
             if y_ != y:
                 y_ = y
-                self.text(str(y) , 2 + d * self.x_fac, 0)
+                self.text(str(y) , self.move_from_line_x + d * self.x_fac, 0)
         self.g_close()
 
     def draw_months(self):
         duration = self.duration()
         x = 0
-        self.g_move(0, 50)
+        self.g_move(0, self.y_fac * HEAD_ROW_NUM - self.move_text_up_y)
         for d in range(duration):
-            self.text(self.month_str(d), 2 + d * self.x_fac, 0)
+            self.text(self.month_str(d), self.move_from_line_x + d * self.x_fac, 0)
         self.g_close()
-
 
     def draw_lines(self):
         duration = self.duration()
         mx = (duration) * self.x_fac + self.desc_len
-        my = self.y_fac * (2 + len(self.activities()))
+        my = self.y_fac * (HEAD_ROW_NUM + len(self.activities()))
         self.draw_line(0, 0, mx, 0)
         self.draw_line(self.desc_len, self.y_fac, mx, self.y_fac)
-        self.draw_line(0, self.y_fac * 2, mx, self.y_fac * 2)
+        y = self.y_fac * HEAD_ROW_NUM
+        self.draw_line(0, y, mx, y)
         self.draw_line(0, 0, 0, my)
 
         # year vertical line
@@ -237,7 +235,7 @@ class Drawer(object):
             self.draw_line(x, self.y_fac, x, my)
 
         # activity horizontal lines
-        y = self.y_fac * 2
+        y = self.y_fac * HEAD_ROW_NUM
         for i, activity in enumerate(self.activities()):
             y += self.y_fac
             self.draw_line(0, y, self.desc_len + duration * self.x_fac, y)
@@ -249,8 +247,8 @@ class Drawer(object):
         print >>self.out, "<g stroke=\"black\"><line x1=\"%d\" y1=\"%d\" x2=\"%d\" y2=\"%d\" stroke-width=\"1\"/></g>" % (x1, y1, x2, y2)
 
     def draw_desc(self):
-        y = 30 
-        self.g_move(5, self.y_fac * 2 - 10)
+        y = self.y_fac
+        self.g_move(self.move_from_line_x, self.y_fac * HEAD_ROW_NUM - 10)
         for i, activity in enumerate(self.activities()):
             desc = cgi.escape(activity['desc'])
             self.text(str(i + 1) + ". " + desc, i + 1, y)
