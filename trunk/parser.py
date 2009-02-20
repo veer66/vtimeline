@@ -60,10 +60,15 @@ def parse_act_start(m):
 def parse_act_end(m):
     date = parse_date(m.groupdict()['date'].strip())
     return ('end', date)
-    
+ 
+def parse_act_complete(m):
+    percent = int(m.groupdict()['percent'].strip())
+    return ('complete', percent)
+
 def parse_activity_detail(m, statements):
     pats = [(u"^ตั้งแต่(?P<date>.+)", parse_act_start), 
-                (u"^ถึง(?P<date>.+)", parse_act_end) ]
+                (u"^ถึง(?P<date>.+)", parse_act_end),
+                (u"^สำเร็จร้อยละ\s*(?P<percent>\d+)", parse_act_complete)]
     pats = map(lambda pat: (re.compile(pat[0]), pat[1]), pats)
     result = None
     for pat in pats:
