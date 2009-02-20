@@ -1,0 +1,16 @@
+body {
+    background: #9CEF6C;
+    
+}
+
+#head {
+    height: 100px;
+    background: #58A72A;
+    color: #FFFFFF;
+    vertical-align: center;
+    text-align: center;
+    font-size: 200%;
+    font-weight: bold;
+}
+
+table.head { width: 100%; }
