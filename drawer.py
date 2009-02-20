@@ -59,7 +59,6 @@ class Drawer(object):
 
     def time_unit(self, date_tuple):
         r = self.resolution()
-        print >>sys.stderr, r, date_tuple
         u = date_tuple[YEAR] * 12 + date_tuple[MONTH]
         u = (u + r - 1) / r
         return u
@@ -85,13 +84,19 @@ class Drawer(object):
             day_diff = None
         return (day_diff, month_diff, year_diff)
 
+    def g_move(self, x, y):
+        print >>self.out, "<g transform=\"translate(%d,%d)\">" % (x, y)
+
+    def g_close(self):
+        print >>self.out, "</g>"
+
     def __call__(self):
-        print >>self.out, "<g transform=\"translate(30,30)\">"
+        self.g_move(30, 30)
         self.draw_header()
         self.draw_desc()
         self.draw_lines()
         self.draw_progress()
-        print >>self.out, "</g>"
+        self.g_close()
 
 
     def draw_progress(self):
@@ -114,7 +119,6 @@ class Drawer(object):
             if 'complete' in activity:
                 c = activity['complete']
                 x2_ = x1 + int((x2 - x1) * float(c) / 100.0)
-                print >>sys.stderr, x2_
                 self.draw_rect(x1, y1+5, x2_, y2-5)
 
 
@@ -178,45 +182,41 @@ class Drawer(object):
     def draw_header(self):
         duration = self.duration()
         mx = (duration) * self.x_fac
-        print >>self.out, "<g transform=\"translate(%d,0)\">" % self.desc_len
-
-
+        self.g_move(self.desc_len, 0)
         self.draw_months()
         self.draw_years()
-        print >>self.out, "</g>"
+        self.g_close()
+
+    def text(self, txt, x, y):
+        print >>self.out, "<text x=\"%d\" y=\"%d\">%s</text>" % (x, y, txt) 
 
     def draw_years(self):
         duration = self.duration()
-        print >>self.out, "<g transform=\"translate(0,20)\">"
+        self.g_move(0, 20)
         y_ = None
         for d in range(duration):
             y = self.month_year_start(d)[1]
             if y_ != y:
                 y_ = y
-                print >>self.out, "<text x=\"%d\" y=\"0\">%d</text>" % (2 + d * self.x_fac, y)
-        print >>self.out, "</g>"
+                self.text(str(y) , 2 + d * self.x_fac, 0)
+        self.g_close()
 
     def draw_months(self):
         duration = self.duration()
         x = 0
-        print >>self.out, "<g transform=\"translate(0,50)\">"
+        self.g_move(0, 50)
         for d in range(duration):
-            print >>self.out, "<text x=\"%d\" y=\"0\">%s</text>" % (2 + d * self.x_fac, self.month_str(d))
-        print >>self.out, "</g>"
+            self.text(self.month_str(d), 2 + d * self.x_fac, 0)
+        self.g_close()
 
 
     def draw_lines(self):
         duration = self.duration()
         mx = (duration) * self.x_fac + self.desc_len
         my = self.y_fac * (2 + len(self.activities()))
-        print >>self.out, '<g stroke="black"><line x1="0" y1="' + '0' + '" x2="' + str(mx) + '" y2="' + '0' + '" stroke-width="1"/></g>'
-
-        self.draw_line(self.desc_len,
-                       self.y_fac,
-                       self.desc_len + duration * self.x_fac,
-                       self.y_fac)
-        print >>self.out, '<g stroke="black"><line x1="0" y1="' + str(self.y_fac * 2) + '" x2="' + str(mx) + '" y2="' + str(self.y_fac * 2) + '" stroke-width="1"/></g>'
-
+        self.draw_line(0, 0, mx, 0)
+        self.draw_line(self.desc_len, self.y_fac, mx, self.y_fac)
+        self.draw_line(0, self.y_fac * 2, mx, self.y_fac * 2)
         self.draw_line(0, 0, 0, my)
 
         # year vertical line
@@ -225,15 +225,11 @@ class Drawer(object):
             y = self.month_year_start(d)[1]
             if y_ != y:
                 y_ = y
-                self.draw_line(self.desc_len + d * self.x_fac,
-                               0,
-                               self.desc_len + d * self.x_fac,
-                               my)
-
-        self.draw_line(self.desc_len + duration * self.x_fac,
-                       0,
-                       self.desc_len + duration * self.x_fac,
-                       my)
+                x = self.desc_len + d * self.x_fac
+                self.draw_line(x, 0, x, my)
+       
+        x = self.desc_len + duration * self.x_fac
+        self.draw_line(x, 0, x, my)
 
         # month veritcal line
         for d in range(duration):
@@ -244,10 +240,7 @@ class Drawer(object):
         y = self.y_fac * 2
         for i, activity in enumerate(self.activities()):
             y += self.y_fac
-            self.draw_line(0,
-                       y,
-                       self.desc_len + duration * self.x_fac,
-                       y)
+            self.draw_line(0, y, self.desc_len + duration * self.x_fac, y)
 
     def activities(self):
         return self.specs['activities']
@@ -257,12 +250,12 @@ class Drawer(object):
 
     def draw_desc(self):
         y = 30 
-        print >>self.out, "<g transform=\"translate(5,%d)\">" % (self.y_fac * 2 - 10,)
+        self.g_move(5, self.y_fac * 2 - 10)
         for i, activity in enumerate(self.activities()):
             desc = cgi.escape(activity['desc'])
-            print >>self.out, "<text x=\"0\" y=\"%d\">%d. %s</text>" % (y, i+1, desc)
+            self.text(str(i + 1) + ". " + desc, i + 1, y)
             y += self.y_fac 
-        print >>self.out, "</g>"
+        self.g_close()
         
 def draw(specs, out):
     Drawer(out, specs)()
