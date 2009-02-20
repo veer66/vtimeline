@@ -41,10 +41,10 @@ class Drawer(object):
         self.specs = specs
         self.x_fac = 100 
         self.y_fac = 30
-        self.desc_len = 200
+        self.desc_len = 300
         self.main_move_x = 30
         self.main_move_y = 30
-        self.move_from_line_x = 2
+        self.move_from_line_x = 5
         self.move_text_up_y = 10
         self.bar_space = 5
 
@@ -251,7 +251,14 @@ class Drawer(object):
         self.g_move(self.move_from_line_x, self.y_fac * HEAD_ROW_NUM - 10)
         for i, activity in enumerate(self.activities()):
             desc = cgi.escape(activity['desc'])
-            self.text(str(i + 1) + ". " + desc, i + 1, y)
+            def onum():
+                return str(i + 1) + ". "
+            def complete():
+                if 'complete' in activity:
+                    return u" (%d%%)" % activity['complete']
+                else:
+                    return ''
+            self.text(onum() + desc + complete(), i + 1, y)
             y += self.y_fac 
         self.g_close()
         
