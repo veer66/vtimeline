@@ -85,9 +85,6 @@ class Drawer(object):
             day_diff = None
         return (day_diff, month_diff, year_diff)
 
-    def time_col_num(self):
-        pass
-
     def __call__(self):
         print >>self.out, "<g transform=\"translate(30,30)\">"
         self.draw_header()
@@ -110,10 +107,21 @@ class Drawer(object):
             x2 = (ed) * self.x_fac + self.desc_len
             y1 = self.y_fac * (2 + i) + 5 
             y2 = self.y_fac * (2 + i + 1) - 5 
-            self.draw_rect(x1, y1, x2, y2)
 
-    def draw_rect(self, x1, y1, x2, y2):
-        print >>self.out, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\"/>" % (x1, y1, x2 - x1, y2 - y1)
+
+            self.draw_rect(x1, y1, x2, y2, "#E0E0E0")
+
+            if 'complete' in activity:
+                c = activity['complete']
+                x2_ = x1 + int((x2 - x1) * float(c) / 100.0)
+                print >>sys.stderr, x2_
+                self.draw_rect(x1, y1+5, x2_, y2-5)
+
+
+
+    
+    def draw_rect(self, x1, y1, x2, y2, fill="black"):
+        print >>self.out, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"%s\"/>" % (x1, y1, x2 - x1, y2 - y1, fill)
 
     def adjusted_start_month(self):
         start_m = self.specs['start']['date']['month']
@@ -226,16 +234,13 @@ class Drawer(object):
                        0,
                        self.desc_len + duration * self.x_fac,
                        my)
-                      
 
-        ############ month veritcal line
+        # month veritcal line
         for d in range(duration):
             x = self.desc_len + d * self.x_fac
             self.draw_line(x, self.y_fac, x, my)
- 
 
-
-        #activity horizontal lines
+        # activity horizontal lines
         y = self.y_fac * 2
         for i, activity in enumerate(self.activities()):
             y += self.y_fac
