@@ -14,6 +14,11 @@
 </p>
 
 <p>
+{% if user %}
+    <span>{{ user.nickname }}</span>
+{% endif %}
+<a href="{{ login_url }}">[Login]</a>
+<a href="{{ logout_url }}">[Logout]</a>
 <form method="post" action="/">
 <textarea rows="20" cols="70" name="specs">
 เริ่ม 1/2552
