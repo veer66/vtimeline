@@ -26,6 +26,7 @@
 import wsgiref.handlers
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
+from google.appengine.api import users
 import os
 import cgi
 import sys
@@ -47,7 +48,10 @@ class MainHandler(webapp.RequestHandler):
     def get(self):
         self.response.headers['Content-type'] = 'application/xhtml+xml'
         path = os.path.join(os.path.dirname(__file__), 'index.html');
-        self.response.out.write(template.render(path, {}))
+        val = {'login_url': users.create_login_url(self.request.uri),
+               'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
+               'user': users.get_current_user()}
+        self.response.out.write(template.render(path, val))
 
     def post(self):
         self.response.headers['Content-type'] = 'application/xhtml+xml'
@@ -58,10 +62,16 @@ class MainHandler(webapp.RequestHandler):
         sio = StringIO()
         d = draw(specs, sio)
         svg = sio.getvalue()
-        val = {'svg': svg, 
+        val = {'foo': 12,
+               'svg': svg, 
                'h': d['maxy'], 
-               'w': d['maxx']}
+               'w': d['maxx'],
+               'login_url': users.create_login_url(self.request.uri)}
         self.response.out.write(template.render(path, val))
+
+class LoginHandler(webapp.RequestHandler):
+    def get(self):
+        self.redirect(users.create_login_url(self.request.uri))
         
 def main():
     application = webapp.WSGIApplication([('/', MainHandler)],
