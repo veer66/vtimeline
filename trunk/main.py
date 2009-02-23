@@ -31,6 +31,7 @@ import cgi
 import sys
 from parser import parse
 from drawer import draw
+from StringIO import StringIO
 
 def statements_to_specs(statements):
     d = {'activities': []}
@@ -44,27 +45,26 @@ def statements_to_specs(statements):
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
+        self.response.headers['Content-type'] = 'application/xhtml+xml'
         path = os.path.join(os.path.dirname(__file__), 'index.html');
-        val = dict(bar='123')
-        self.response.out.write(template.render(path, val))
+        self.response.out.write(template.render(path, {}))
 
-class Timeline(webapp.RequestHandler):
     def post(self):
+        self.response.headers['Content-type'] = 'application/xhtml+xml'
+        path = os.path.join(os.path.dirname(__file__), 'index.html');
         raw_specs = self.request.get('specs')
         statements = parse(raw_specs)
         specs = statements_to_specs(statements)
-        self.response.headers['Content-type'] = 'image/svg+xml'
-        self.response.out.write("""<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" 
-  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="1024px" height="800px" 
-     xmlns="http://www.w3.org/2000/svg" version="1.1">
-        """)
-        draw(specs, self.response.out)
-        self.response.out.write("""</svg>""")
-
+        sio = StringIO()
+        d = draw(specs, sio)
+        svg = sio.getvalue()
+        val = {'svg': svg, 
+               'h': d['maxy'], 
+               'w': d['maxx']}
+        self.response.out.write(template.render(path, val))
+        
 def main():
-    application = webapp.WSGIApplication([('/', MainHandler),
-                                          ('/timeline', Timeline)],
+    application = webapp.WSGIApplication([('/', MainHandler)],
                                          debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 

@@ -104,6 +104,8 @@ class Drawer(object):
         self.draw_lines()
         self.draw_progress()
         self.g_close()
+        return {'maxy': self.maxy + self.main_move_x * 2, 
+                'maxx': self.maxx + self.main_move_y * 2}
 
     def draw_progress(self):
         for i, activity in enumerate(self.activities()):
@@ -211,6 +213,8 @@ class Drawer(object):
         duration = self.duration()
         mx = (duration) * self.x_fac + self.desc_len
         my = self.y_fac * (HEAD_ROW_NUM + len(self.activities()))
+        self.maxy = my
+        self.maxx = mx
         self.draw_line(0, 0, mx, 0)
         self.draw_line(self.desc_len, self.y_fac, mx, self.y_fac)
         y = self.y_fac * HEAD_ROW_NUM
@@ -263,4 +267,4 @@ class Drawer(object):
         self.g_close()
         
 def draw(specs, out):
-    Drawer(out, specs)()
+    return Drawer(out, specs)()

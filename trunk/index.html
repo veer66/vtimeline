@@ -9,10 +9,12 @@
 
 <title>โปรแกรมสร้างแผนภูมิแสดงความคืบหน้าของโครงการ</title></head>
 <body>
-<table class="head"><tr><td id="head">โปรแกรมสร้างแผนภูมิแสดงความคืบหน้าของโครงการ</td></tr><table>
+<table class="head"><tr><td id="head">โปรแกรมสร้างแผนภูมิแสดงความคืบหน้าของโครงการ</td></tr></table>
+<p id="msg">โปรแกรมนี้เขียนขึ้นมามั่วๆ ไว้ทำรายงาน น่าจะใช้ได้กับ Firefox 3.x.x เท่านั้น แต่ว่าพี่ต้นลองวันก่อนใช้ Chrome ก็ได้ ตอนนี้ขึ้นได้ด้วยว่าแต่ละงานเสร็จแล้วกี่เปอร์เซ็นต์. อีกอย่างสามารถโหลดโปรแกรมไปใช้ ไปแก้ และทำอะไรอื่นๆ ได้จาก <a href="http://code.google.com/p/vtimeline/">http://code.google.com/p/vtimeline/</a> แก้ไขล่าสุด 20/2/2552  22:55 น.
+</p>
 
 <p>
-<form method="post" action="/timeline">
+<form method="post" action="/">
 <textarea rows="20" cols="70" name="specs">
 เริ่ม 1/2552
 สิ้นสุด 4/2553
@@ -30,8 +32,15 @@
 </form>
 </p>
 
-<p id="msg">โปรแกรมนี้เขียนขึ้นมามั่วๆ ไว้ทำรายงาน น่าจะใช้ได้กับ Firefox 3.x.x เท่านั้น แต่ว่าพี่ต้นลองวันก่อนใช้ Chrome ก็ได้ ตอนนี้ขึ้นได้ด้วยว่าแต่ละงานเสร็จแล้วกี่เปอร์เซ็นต์. อีกอย่างสามารถโหลดโปรแกรมไปใช้ ไปแก้ และทำอะไรอื่นๆ ได้จาก <a href="http://code.google.com/p/vtimeline/">http://code.google.com/p/vtimeline/</a> แก้ไขล่าสุด 20/2/2552  22:55 น.</div>
-</p>
+{% if svg %}
+<div id="result"> 
+    <svg xmlns="http://www.w3.org/2000/svg" width="{{ w }}" height="{{ h }}"> 
+        {{ svg }}
+    </svg>
+    <br/> 
+</div>
+{% endif %}
+
 
 <div>
 <img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif"
