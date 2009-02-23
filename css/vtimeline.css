@@ -14,3 +14,7 @@ body {
 }
 
 table.head { width: 100%; }
+
+#result {
+    background: #FFFFFF;
+}
