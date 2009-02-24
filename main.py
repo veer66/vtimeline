@@ -43,7 +43,7 @@ class MainHandler(webapp.RequestHandler):
         specs_list = model.Specs.all()
         specs_list.filter("author =", users.get_current_user())
         specs_list.order("-date")
-        val = {'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
+        val = {'logout_url': users.create_logout_url(self.request.uri),
                'user': users.get_current_user(),
                'specs_list': specs_list}
         return val
