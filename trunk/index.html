@@ -7,6 +7,21 @@
 <meta http-equiv="Content-language" content="th" />
 <link href="/css/vtimeline.css" type="text/css" rel="stylesheet"></link>
 
+<script type="text/javascript" src="/js/jquery-1.3.2.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#specs_list").load("/specs", {'action': 'list'});
+});
+
+function delete_specs(key) {
+    $.post("/specs", 
+           {'action': 'delete', 'key': key},
+           function(data) {
+                $("#specs_list").load("/specs", {'action': 'list'});
+           },
+           "text"); 
+}
+</script>
 <title>โปรแกรมสร้างแผนภูมิแสดงความคืบหน้าของโครงการ</title></head>
 <body>
 <table class="head"><tr><td id="head">โปรแกรมสร้างแผนภูมิแสดงความคืบหน้าของโครงการ</td></tr></table>
@@ -20,7 +35,7 @@
 <table>
 <tr>
 <td>
-<form method="post" action="/">
+<form id="specform" method="post" action="/">
 <table id="form">
 <tr>
 <td>ชื่อแผนภูมิ (ใช้ช่วยจำ)</td>
@@ -48,15 +63,7 @@
 </table>
 </form>
 </td>
-<td>
-<ul>
-{% for specs in specs_list %}
-    <li>
-        <a href="/?key={{ specs.key|escape }}&amp;action=load">{{ specs.ref }}</a> 
-        <a href="/?key={{ specs.key|escape }}&amp;action=delete">[ลบทิ้ง]</a> 
-    </li>
-{% endfor %}
-</ul>
+<td id="specs_list">
 </td>
 </tr>
 </table>

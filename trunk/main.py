@@ -37,30 +37,42 @@ from drawer import draw
 from utils import statements_to_specs
 import model
 
-
-class MainHandler(webapp.RequestHandler):
-    def common_val(self):
-        specs_list = model.Specs.all()
-        specs_list.filter("author =", users.get_current_user())
-        specs_list.order("-date")
-        val = {'logout_url': users.create_logout_url(self.request.uri),
-               'user': users.get_current_user(),
-               'specs_list': specs_list}
-        return val
-
-    def get(self):
+class SpecsHandler(webapp.RequestHandler):
+    def post(self):
         user = users.get_current_user()
         if user:
-            self.response.headers['Content-type'] = 'application/xhtml+xml'
-            path = os.path.join(os.path.dirname(__file__), 'index.html');
-            val = self.common_val()
             action = self.request.get('action')
             key = self.request.get('key')
             if action == "delete":
                 specs = model.Specs.get(key)
                 if specs.author == user:
                     specs.delete()
-            elif action == "load":
+                    self.response.out.write("delete:" + key)
+            elif action == "list":
+                specs_list = model.Specs.all()
+                specs_list.filter("author =", users.get_current_user())
+                specs_list.order("-date")
+                path = os.path.join(os.path.dirname(__file__), 'specs.html')
+                val = {'specs_list': specs_list}
+                self.response.out.write(template.render(path, val))                        
+        else:
+            self.redirect(users.create_login_url(self.request.uri))
+                    
+class MainHandler(webapp.RequestHandler):
+    def common_val(self):
+        val = {'logout_url': users.create_logout_url(self.request.uri),
+               'user': users.get_current_user()}
+        return val
+
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            self.response.headers['Content-type'] = 'application/xhtml+xml'
+            path = os.path.join(os.path.dirname(__file__), 'index.html')
+            val = self.common_val()
+            action = self.request.get('action')
+            key = self.request.get('key')
+            if action == "load":
                 specs = model.Specs.get(key)
                 if specs.author == user:
                     val['specs'] = specs.content
@@ -87,8 +99,10 @@ class MainHandler(webapp.RequestHandler):
             action = self.request.get('action')
             val = self.common_val()
             raw_specs = self.request.get('specs')
+            val['specs'] = raw_specs 
+            val['title'] = self.request.get('title')
+            
             if action == u"สร้างแผนภูมิ":
-                # create diagram
                 self.create_svg(val, raw_specs)
             else:
                 # save specs
@@ -96,14 +110,14 @@ class MainHandler(webapp.RequestHandler):
                 specs.content = raw_specs
                 specs.title = self.request.get('title')
                 specs.author = user
-                specs.put()
-
+                specs.put() 
             self.response.out.write(template.render(path, val))
         else:
             self.redirect(users.create_login_url(self.request.uri))
 
 def main():
-    application = webapp.WSGIApplication([('/', MainHandler)],
+    application = webapp.WSGIApplication([('/', MainHandler),
+                                          ('/specs', SpecsHandler)],
                                          debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 

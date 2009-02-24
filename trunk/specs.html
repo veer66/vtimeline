@@ -1,0 +1,8 @@
+<ul>
+{% for specs in specs_list %}
+<li>
+<a href="/?key={{ specs.key|escape }}&amp;action=load">{{ specs.ref }}</a> 
+<a id="delete" href="#" onclick='delete_specs("{{ specs.key|escape }}")'>[ลบทิ้ง]</a> 
+</li>
+{% endfor %}
+</ul>
