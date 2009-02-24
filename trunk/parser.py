@@ -91,16 +91,36 @@ def parse_end(m, statements):
 def parse_resolution(m, statements):
     m_ = re.match(u"^(\d+)\s+เดือน$", m.group(2).strip())
     if m_:
-        statements.append({'type': 'resolution', 'day': 0, 'year': 0, 'month': int(m_.group(1))})
+        statements.append({'type': 'resolution', 
+                           'day': 0, 
+                           'year': 0, 
+                           'month': int(m_.group(1))})
     else:
         raise RuntimeError, "Cannot parse resolution"
 
+def parse_width(m, statements):
+    m_ = re.match(u"^(\d+)$", m.group(2).strip())
+    if m_:
+        statements.append({'type': 'width', 'value': int(m_.group(1))})
+    else:
+        raise RuntimeError, "Cannot parse width"
+        
+def parse_first_column_width(m, statements):
+    m_ = re.match(u"^(\d+)$", m.group(2).strip())
+    if m_:
+        statements.append({'type': '1st_col_width', 
+                           'value': int(m_.group(1))})
+    else:
+        raise RuntimeError, "Cannot parse first column width"
+                
 def parse(txt):
     start_pats = [(u"(^กิจกรรม)(.+)", parse_activity) , 
                          (u"(^\*)(.+)", parse_activity_detail), 
                          (u"(^เริ่ม)(.+)", parse_start),
                          ( u"(^สิ้นสุด)(.+)", parse_end ), 
-                         (u"(^ความละเอียด)(.+)", parse_resolution)]
+                         (u"(^ความละเอียด)(.+)", parse_resolution),
+                         (u"(^ช่องกว้าง)(.+)", parse_width),
+                         (u"(^ช่องแรกกว้าง)(.+)", parse_first_column_width)]
     start_pats = map(lambda pat: (re.compile(pat[0]), pat[1]), start_pats)
    
     statements = []

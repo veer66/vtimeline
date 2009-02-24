@@ -39,9 +39,15 @@ class Drawer(object):
         self.max_y = max_y
         self.out = out
         self.specs = specs
-        self.x_fac = 100 
+        if 'width' in self.specs:
+            self.x_fac = self.specs['width']['value']
+        else:
+            self.x_fac = 100 
         self.y_fac = 30
-        self.desc_len = 300
+        if '1st_col_width' in self.specs:
+            self.desc_len = self.specs['1st_col_width']['value']
+        else:
+            self.desc_len = 300
         self.main_move_x = 30
         self.main_move_y = 30
         self.move_from_line_x = 5
