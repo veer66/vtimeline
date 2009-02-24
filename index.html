@@ -14,14 +14,22 @@
 </p>
 
 <p>
-{% if user %}
-    <span>{{ user.nickname }}</span>
-{% endif %}
-<a href="{{ login_url }}">[Login]</a>
-<a href="{{ logout_url }}">[Logout]</a>
+<span>{{ user.nickname }} กำลังใช้งาน</span> 
+<a href="{{ logout_url}}">[ลงชื่อออก]</a>
+<br/>
+<table>
+<tr>
+<td>
 <form method="post" action="/">
-<textarea rows="20" cols="70" name="specs">
-เริ่ม 1/2552
+<table id="form">
+<tr>
+<td>ชื่อแผนภูมิ (ใช้ช่วยจำ)</td>
+<td><input type="text" name="title" value="{% if title %}{{ title|escape }}{% else %}แผนภูมิของฉัน{% endif %}" size="69" /></td>
+</tr>
+<tr>
+<td>คำอธิบาย (ใช้สร้างแผนภูมิ)</td>
+<td>
+<textarea rows="20" cols="69" name="specs">{% if specs %}{{ specs|escape }}{% else %}เริ่ม 1/2552
 สิ้นสุด 4/2553
 ความละเอียด 3 เดือน
 กิจกรรม ขายกระดาษ
@@ -31,10 +39,27 @@
 กิจกรรม ปลูกต้นไม้
 * ตั้งแต่ 5/2552
 * ถึง 4/2553
-</textarea>
-<br/>
-<input type="submit" value="สร้างแผนภูมิ"/>
+{% endif %}
+</textarea></td>
+</tr>
+<td></td>
+<td><input type="submit" name="action" value="สร้างแผนภูมิ"/>
+ <input type="submit" name="action" value="จัดเก็บคำอธิบาย"/></td>
+</table>
 </form>
+</td>
+<td>
+<ul>
+{% for specs in specs_list %}
+    <li>
+        <a href="/?key={{ specs.key|escape }}&amp;action=load">{{ specs.ref }}</a> 
+        <a href="/?key={{ specs.key|escape }}&amp;action=delete">[ลบทิ้ง]</a> 
+    </li>
+{% endfor %}
+</ul>
+</td>
+</tr>
+</table>
 </p>
 
 {% if svg %}
@@ -45,7 +70,6 @@
     <br/> 
 </div>
 {% endif %}
-
 
 <div>
 <img src="http://code.google.com/appengine/images/appengine-noborder-120x30.gif"
