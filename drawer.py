@@ -120,9 +120,10 @@ class Drawer(object):
             sd = self.month_year_to_duration_floor(sm, sy)
             em = activity['end']['month']
             ey = activity['end']['year']
-            ed = self.month_year_to_duration_ceiling(em, ey)
+            ed = self.month_year_to_duration_ceiling(em, ey) 
             x1 = sd * self.x_fac + self.desc_len
-            x2 = (ed) * self.x_fac + self.desc_len
+            x2 = ed  * self.x_fac + self.desc_len
+            print >>sys.stderr, "sd, ed", sd, ed
             y1 = self.y_fac * (2 + i) + self.bar_space 
             y2 = self.y_fac * (2 + i + 1) - self.bar_space
             self.draw_rect(x1, y1, x2, y2, "#E0E0E0")
@@ -136,7 +137,8 @@ class Drawer(object):
 
     def adjusted_start_month(self):
         start_m = self.specs['start']['date']['month']
-        start_m = ((start_m - 1) / self.resolution()) * self.resolution()
+        if start_m % self.resolution() != 0:
+            start_m = (start_m  / self.resolution()) * self.resolution()
         return start_m
 
     def start_year(self):
@@ -146,10 +148,10 @@ class Drawer(object):
     def month_year_start(self, i):
         start_m = self.adjusted_start_month()
         start_y = self.start_year()
-        m = i * self.resolution() + start_m
-        y = start_y + m / MONTH_NUM
+        m = i * self.resolution() + start_m - 1
+        y = (start_y + m) / MONTH_NUM
         m = m % MONTH_NUM
-        return (m, y)
+        return (m + 1, y)
 
     def month_year_end(self, i):
         start_m = self.adjusted_start_month()
@@ -165,11 +167,16 @@ class Drawer(object):
         dy = y - start_y
         dm = m - start_m
         d = dm + dy * MONTH_NUM
-        return (d + self.resolution() - 1)/ self.resolution()
+        if self.resolution() > 1:
+            d = (d + self.resolution() - 1)/ self.resolution()
+        else:
+            d += 1 
+        return d
 
     def month_year_to_duration_floor(self, m, y):
         start_m = self.adjusted_start_month()
         start_y = self.start_year()
+        print >>sys.stderr, "start_m", start_m
         dy = y - start_y
         dm = m - start_m
         d = dm + dy * MONTH_NUM
@@ -179,10 +186,10 @@ class Drawer(object):
         if self.resolution() > 1:
             smonth = self.month_year_start(d)[0]
             emonth = self.month_year_end(d)[0]
-            result = month_thai_short[smonth] + "-" + month_thai_short[emonth]
+            result = month_thai_short[smonth - 1] + "-" + month_thai_short[emonth]
         else:
             month = self.month_year_start(d)[0]
-            result = month_thai_short[month]
+            result = month_thai_short[month - 1]
         return result
 
     def draw_header(self):
