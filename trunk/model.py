@@ -28,7 +28,7 @@ from google.appengine.ext import db
 class Specs(db.Model):
     author = db.UserProperty()
     title = db.StringProperty()
-    content = db.StringProperty(multiline=True)
+    content = db.TextProperty()
     date = db.DateTimeProperty(auto_now_add=True)
 
     def ref(self):
