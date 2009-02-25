@@ -55,10 +55,11 @@ class Drawer(object):
         self.bar_space = 5
 
     def duration(self):
-        return self.time_unit( \
-            self.diff_date(self.specs['start']['date'], \
-                           self.specs['end']['date']))
-       
+        diff_date = self.diff_date(self.specs['start']['date'], \
+                                   self.specs['end']['date'])
+        time_unit = self.time_unit(diff_date) 
+        return time_unit
+            
     def resolution(self):
         r_list = [1,2,3,4,6] # MONTH_NUM % r = 0
         r_list.reverse()
@@ -78,10 +79,10 @@ class Drawer(object):
     
     def diff_date(self, start, end):
         start_year = start['year']
-        start_month = start['month']
+        start_month = self.adjusted_start_month()
         start_day = end['day']
         end_year = end['year']
-        end_month = end['month']
+        end_month = self.adjusted_end_month()
         end_day = end['day']
         if end_year is not None and start_year is not None:
             year_diff = end_year - start_year 
@@ -135,10 +136,18 @@ class Drawer(object):
         print >>self.out, "<rect x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"%s\"/>" % (x1, y1, x2 - x1, y2 - y1, fill)
 
     def adjusted_start_month(self):
-        start_m = self.specs['start']['date']['month']
+        start_m = self.specs['start']['date']['month'] - 1
         if start_m % self.resolution() != 0:
             start_m = (start_m  / self.resolution()) * self.resolution()
-        return start_m
+        return start_m + 1
+
+    def adjusted_end_month(self):
+        end_m = self.specs['end']['date']['month'] 
+        if end_m % self.resolution() != 0:
+            end_m = ((end_m + self.resolution() - 1) / \
+                      self.resolution()) * self.resolution()
+            end_m += 1
+        return end_m 
 
     def start_year(self):
         start_y = self.specs['start']['date']['year']
@@ -158,7 +167,7 @@ class Drawer(object):
         m = ((i + 1) * self.resolution()) + start_m - 1
         y = start_y + m / MONTH_NUM 
         m = m % MONTH_NUM
-        return (m, y)
+        return (m - 1, y)
 
     def month_year_to_duration_ceiling(self, m, y):
         start_m = self.adjusted_start_month()
@@ -182,8 +191,8 @@ class Drawer(object):
 
     def month_str(self, d):
         if self.resolution() > 1:
-            smonth = self.month_year_start(d)[0]
-            emonth = self.month_year_end(d)[0]
+            smonth = self.month_year_start(d)[0] # 0 - year
+            emonth = self.month_year_end(d)[0] # 0 - year
             result = month_thai_short[smonth - 1] + "-" + month_thai_short[emonth]
         else:
             month = self.month_year_start(d)[0]
