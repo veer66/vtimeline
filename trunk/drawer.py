@@ -123,7 +123,6 @@ class Drawer(object):
             ed = self.month_year_to_duration_ceiling(em, ey) 
             x1 = sd * self.x_fac + self.desc_len
             x2 = ed  * self.x_fac + self.desc_len
-            print >>sys.stderr, "sd, ed", sd, ed
             y1 = self.y_fac * (2 + i) + self.bar_space 
             y2 = self.y_fac * (2 + i + 1) - self.bar_space
             self.draw_rect(x1, y1, x2, y2, "#E0E0E0")
@@ -149,7 +148,7 @@ class Drawer(object):
         start_m = self.adjusted_start_month()
         start_y = self.start_year()
         m = i * self.resolution() + start_m - 1
-        y = (start_y + m) / MONTH_NUM
+        y = start_y + m / MONTH_NUM
         m = m % MONTH_NUM
         return (m + 1, y)
 
@@ -176,7 +175,6 @@ class Drawer(object):
     def month_year_to_duration_floor(self, m, y):
         start_m = self.adjusted_start_month()
         start_y = self.start_year()
-        print >>sys.stderr, "start_m", start_m
         dy = y - start_y
         dm = m - start_m
         d = dm + dy * MONTH_NUM
@@ -208,7 +206,7 @@ class Drawer(object):
         self.g_move(0, self.y_fac - self.move_text_up_y)
         y_ = None
         for d in range(duration):
-            y = self.month_year_start(d)[1] # 1 = month
+            y = self.month_year_start(d)[1] # 1 = year
             if y_ != y:
                 y_ = y
                 self.text(str(y) , self.move_from_line_x + d * self.x_fac, 0)
